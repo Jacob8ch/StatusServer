@@ -3,7 +3,7 @@ import json
 import os
 import sys
 
-STATUS_FILE = '/Users/jacob/Documents/Code/Login/statuses.json'
+STATUS_FILE = '/statuses.json'
 
 
 def load_statuses():
