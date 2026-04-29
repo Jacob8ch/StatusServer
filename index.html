@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PC IT Status</title>
+        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                font-family: Arial, sans-serif;
+                background-color: #f0f0f0;
+            }
+            .top-half {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background-color: #ffffff;
+                color: white;
+            }
+            .top-half h1 {
+                font-family: 'Arial Black', Arial, sans-serif;
+                font-size: 10vw;
+                font-weight: bolder;
+                margin: 0;
+                color: red;
+            }
+            .bottom-half {
+                flex: 1;
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+                background-color: #ffffff;
+            }
+            .person {
+                text-align: center;
+                padding: 20px;
+                border: 2px solid #ccc;
+                border-radius: 10px;
+                background-color: #e9e9e9;
+                width: 40%;
+            }
+            .person h2 {
+                font-size: 3vw;
+                margin: 0 0 10px 0;
+            }
+            .status {
+                font-size: 4vw;
+                font-weight: bold;
+            }
+            .status.available {
+                color: #28a745;
+            }
+            .status.away {
+                color: #ffc107;
+            }
+            .status.unknown {
+                color: #6c757d;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="top-half">
+            <h1>Helpdesk is</h1>
+            <h1>CLOSED</h1>
+        </div>
+        <div class="bottom-half">
+            <div class="person" id="frank">
+                <h2>Frank</h2>
+                <div class="status unknown" id="frank-status">Unknown</div>
+            </div>
+            <div class="person" id="jacob">
+                <h2>Jacob</h2>
+                <div class="status unknown" id="jacob-status">Unknown</div>
+            </div>
+        </div>
+
+        <script>
+            const serverHost = window.location.hostname || '127.0.0.1';
+            const socket = io(`http://${serverHost}:5000`, {
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                console.log('Socket connected');
+            });
+
+            socket.on('connect_error', (err) => {
+                console.error('Socket connect error:', err);
+            });
+
+            socket.on('status_update', (data) => {
+                updateStatuses(data);
+            });
+
+            function updateStatuses(data) {
+                const frankStatus = document.getElementById('frank-status');
+                const jacobStatus = document.getElementById('jacob-status');
+
+                frankStatus.textContent = data.Frank || 'Unknown';
+                frankStatus.className = 'status ' + getStatusClass(data.Frank);
+
+                jacobStatus.textContent = data.Jacob || 'Unknown';
+                jacobStatus.className = 'status ' + getStatusClass(data.Jacob);
+
+                if (frankStatus.className === 'status available' || jacobStatus.className === 'status available') {
+                    document.querySelector('.top-half h1:nth-child(2)').textContent = 'OPEN';
+                    document.querySelector('.top-half h1:nth-child(2)').style.color = '#28a745';
+                    document.querySelector('.top-half h1:nth-child(1)').style.color = '#28a745';
+                } else {
+                    document.querySelector('.top-half h1:nth-child(2)').textContent = 'CLOSED';
+                    document.querySelector('.top-half h1:nth-child(2)').style.color = 'red';
+                    document.querySelector('.top-half h1:nth-child(1)').style.color = 'red';
+                }
+            }
+
+            function getStatusClass(status) {
+                if (status === 'Available') return 'available';
+                if (status === 'Away') return 'away';
+                if (status === 'GS') return 'away';
+                if (status === 'HS') return 'available';
+                return 'unknown';
+            }
+
+            updateStatuses();
+
+            function getStatusClass(status) {
+                if (status === 'Available') return 'available';
+                if (status === 'Away') return 'away';
+                if (status === 'GS') return 'away';
+                if (status === "HS") return 'available';
+                if (status === 'Lunch') return 'away';
+                return 'unknown';
+            }
+
+            updateStatuses();
+        </script>
+    </body>
+</html>
