@@ -3,6 +3,7 @@ import flask
 import json
 import os
 import warnings
+warnings.filterwarnings('ignore')
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 
@@ -24,7 +25,7 @@ def save_statuses(statuses):
 app = flask.Flask(__name__, static_folder='.', static_url_path='')
 app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app, resources={r"/*": {"origins": "*"}})
-socketio = SocketIO(app, cors_allowed_origins='*', async_mode='threading')
+socketio = SocketIO(app, cors_allowed_origins='*', async_mode='eventlet')
 
 
 @app.route('/')
@@ -40,27 +41,6 @@ def sign():
 @app.route('/status')
 def status():
     return flask.jsonify(load_statuses())
-
-
-@app.route('/update', methods=['POST'])
-def update():
-    payload = flask.request.get_json(silent=True)
-    if not payload:
-        return flask.jsonify({"error": "JSON body required"}), 400
-
-    statuses = load_statuses()
-    if 'person' in payload and 'status' in payload:
-        person = payload['person']
-        status_value = payload['status']
-        if person not in statuses:
-            return flask.jsonify({"error": "Invalid person"}), 400
-        statuses[person] = status_value
-    else:
-        statuses = payload
-
-    save_statuses(statuses)
-    socketio.emit('status_update', statuses)
-    return flask.jsonify(statuses)
 
 
 @socketio.on('connect')
