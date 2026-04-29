@@ -87,7 +87,6 @@ def watch_status_file():
             if current_data != last_data:
                 last_data = current_data
                 socketio.emit('status_update', current_data)
-                print('Detected external file change and emitted update.')
 
 
 if len(args) > 1:
@@ -97,9 +96,8 @@ if len(args) > 1:
         if person in current_statuses:
             current_statuses[person] = new_status
             save_statuses(current_statuses)
-            print(f"Updated {person} to {new_status}")
         else:
-            print(f"Invalid person: {person}")
+            pass
         sys.exit(0)
 
 
